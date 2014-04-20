@@ -28,32 +28,26 @@ object ArgonautMacro {
   private def jsonString2tree(c: Context)(string: String): c.Expr[Json] = {
     import c.universe._
 
-    def json2tree(j: Json): c.Tree = j.fold(
-      jsonNull   = q"argonaut.Json.jNull",
-      jsonBool   = value => {
-        if(value) q"argonaut.Json.jTrue"
-        else q"argonaut.Json.jFalse"
-      },
-      jsonNumber = value => q"argonaut.Json.jNumber($value)",
-      jsonString = value => q"argonaut.Json.jString($value)",
-      jsonArray  = value => {
-        val xs = value.map(v => json2tree(v))
-        q"argonaut.Json.array(..$xs)"
-      },
-      jsonObject = value => {
-        val xs: List[c.Tree] = value.toMap.map{
-          case (k, v) => q"($k, ${json2tree(v)})"
-        }(collection.breakOut)
-        q"argonaut.Json.obj(..$xs)"
-      }
-    )
+    implicit def jsonLiftable: Liftable[Json] = new Liftable[Json] {
+      def apply(json: Json) = json.fold[Tree](
+        jsonNull   = q"argonaut.Json.jNull",
+        jsonBool   = value => {
+          if (value) q"argonaut.Json.jTrue"
+          else q"argonaut.Json.jFalse"
+        },
+        jsonNumber = value => q"argonaut.Json.jNumber($value)",
+        jsonString = value => q"argonaut.Json.jString($value)",
+        jsonArray  = value => q"argonaut.Json.array(..$value)",
+        jsonObject = value => q"argonaut.Json.obj(..${ value.toMap })"
+      )
+    }
 
     val json = JsonParser.parse(string).fold(
       error => sys.error(error.toString),
       identity
     )
 
-    c.Expr[Json](json2tree(json))
+    c.Expr[Json](q"$json")
   }
 }
 
