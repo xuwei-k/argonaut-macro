@@ -29,22 +29,22 @@ object ArgonautMacro {
     import c.universe._
 
     def json2tree(j: Json): c.Tree = j.fold(
-      jsonNull   = q"Json.jNull",
+      jsonNull   = q"argonaut.Json.jNull",
       jsonBool   = value => {
-        if(value) q"Json.jTrue"
-        else q"Json.jFalse"
+        if(value) q"argonaut.Json.jTrue"
+        else q"argonaut.Json.jFalse"
       },
-      jsonNumber = value => q"Json.jNumber($value)",
-      jsonString = value => q"Json.jString($value)",
+      jsonNumber = value => q"argonaut.Json.jNumber($value)",
+      jsonString = value => q"argonaut.Json.jString($value)",
       jsonArray  = value => {
         val xs = value.map(v => json2tree(v))
-        q"Json.array(..$xs)"
+        q"argonaut.Json.array(..$xs)"
       },
       jsonObject = value => {
         val xs: List[c.Tree] = value.toMap.map{
           case (k, v) => q"($k, ${json2tree(v)})"
         }(collection.breakOut)
-        q"Json.obj(..$xs)"
+        q"argonaut.Json.obj(..$xs)"
       }
     )
 
