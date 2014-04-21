@@ -28,15 +28,8 @@ object build extends Build {
   ).settings(
     libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     libraryDependencies ++= (
-      if(scalaVersion.value.startsWith("2.10")) {
-        ("io.argonaut" %% "argonaut" % "6.0.3") ::
-        ("org.scalamacros" % "quasiquotes_2.10" % "2.0.0") ::
-        compilerPlugin("org.scalamacros" %% "paradise" % "2.0.0" cross CrossVersion.full) ::
-        Nil
-      } else {
-        ("io.argonaut" % "argonaut_2.11.0-RC1" % "6.0.3") :: // TODO Scala 2.11.0 final
-        Nil
-      }
+      ("io.argonaut" % "argonaut_2.11.0-RC1" % "6.0.3") :: // TODO Scala 2.11.0 final
+      Nil
     )
   )
 }
